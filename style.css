@@ -45,6 +45,8 @@ header {
     display: grid;
     grid-template-columns: 1fr auto 1fr;
     align-items: center;
+    border-bottom: 1px solid var(--system-border-color-form);
+
 }
 
 .page-title {
@@ -72,4 +74,27 @@ header {
 .img-theme-switcher {
     width: 24px;
     height: 24px;
+}
+
+.main-content {
+    /* background-color: red; */
+    display: flex;
+    flex-direction: row;
+    justify-content: space-evenly;
+    align-items: start;
+}
+
+.card {
+    background-color: var(--system-bg-card-color);
+    border-radius: 8px;
+    border: 1px solid var(--system-border-color-form);
+    margin: 30px 10px 20px 10px;
+    padding: 15px;
+}
+
+hr{
+    border: none;
+    background-color: var(--system-border-color-form);
+    height: 0.5px;
+    margin-bottom: 21.28px; /* A margem do h4 é exatamente 21.28px */
 }
