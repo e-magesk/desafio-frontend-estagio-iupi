@@ -127,7 +127,7 @@ header {
     /* background-color: red; */
     display: flex;
     flex-direction: row;
-    justify-content: space-evenly;
+    justify-content: center;
     align-items: start;
 }
 
@@ -138,10 +138,19 @@ header {
     margin: 30px 10px 20px 10px;
     padding: 15px;
 
-    &.transaction-table {
+    &.card-table {
         border: none;
         padding: 0;
+        overflow-x: auto;
     }
+
+    &.new-transaction{
+        width: 30%;
+    }
+}
+
+.transaction-table {
+    width: 100%;
 }
 
 table {
@@ -257,11 +266,13 @@ select {
 }
 
 .div-vertical-orientation {
+    width: 40%;
     display: flex;
     flex-direction: column;
 }
 
 .div-horizontal-orientation {
+    width: 100%;
     display: flex;
     flex-direction: row;
     /* justify-content: space-between; */
@@ -311,7 +322,6 @@ select {
 }
 
 .btn-icon {
-
     padding: 0;
     border: none;
     background-color: transparent;
@@ -407,5 +417,4 @@ select {
     &:hover {
         background-color: var(--blue-btn-hover-color);
     }
-
 }
