@@ -224,11 +224,16 @@ function init() {
 /**
  * Renderiza a lista de transações na tabela.
  * @param {Array} transactionsList - A lista de transações a ser renderizada na tabela de Lançamentos.
- */
- function renderTransactions(transactionsList) {
+*/
+function renderTransactions(transactionsList) {
+    
+    // Limpa o corpo da tabela antes de renderizar
+    TABLE_TRANSACTIONS_BODY.innerHTML = '';
 
-     // Limpa o corpo da tabela antes de renderizar
-     TABLE_TRANSACTIONS_BODY.innerHTML = '';
+    // Atualiza os widgets de resumo após renderizar as transações
+    // Isso possibilita que os widgets reflitam apenas as transações atualmente exibidas
+    // na tabela, mesmo com um filtro de busca aplicado.
+    renderWidgets(transactionsList);
 
     if (transactionsList.length === 0) {
         renderNonTransactionFoundMessage();
@@ -276,10 +281,6 @@ function init() {
         TABLE_TRANSACTIONS_BODY.appendChild(row);
     });
 
-    // Atualiza os widgets de resumo após renderizar as transações
-    // Isso possibilita que os widgets reflitam apenas as transações atualmente exibidas
-    // na tabela, mesmo com um filtro de busca aplicado.
-    renderWidgets(transactionsList);
 }
 
 /**
@@ -296,7 +297,7 @@ function renderBadgeTransactionTotal() {
  */
 function renderNonTransactionFoundMessage() {
     const message = document.createElement('tr');
-    message.innerHTML = '<td style="text-align: center;" colspan="4">Nenhuma transação encontrada.</td>';
+    message.innerHTML = '<td style="text-align: center;" colspan="5">Nenhuma transação encontrada.</td>';
     TABLE_TRANSACTIONS_BODY.appendChild(message);
 }
 
