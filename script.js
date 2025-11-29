@@ -29,6 +29,13 @@ const WIDGET_TOTAL_INCOME = document.getElementById('widget-value-total-income')
 const WIDGET_TOTAL_EXPENSE = document.getElementById('widget-value-total-expense');
 const BTN_INCOME = document.getElementById('btn-income');
 const BTN_EXPENSE = document.getElementById('btn-expense');
+const INPUT_DESCRIPTION = document.getElementById('input-description');
+const INPUT_AMOUNT = document.getElementById('input-amount');
+const INPUT_DATE = document.getElementById('input-date');
+const INPUT_DESCRIPTION_VALIDATION = document.getElementById('input-form-validation-description');
+const INPUT_AMOUNT_VALIDATION = document.getElementById('input-form-validation-amount');
+const INPUT_DATE_VALIDATION = document.getElementById('input-form-validation-date');
+
 
 // ---
 // FUNÇÕES AUXILIARES 
@@ -267,6 +274,87 @@ BTN_EXPENSE.addEventListener('click', (event) => {
     BTN_INCOME.style.color = styles.getPropertyValue('--system-font-color-btn-expense-income-default');
     BTN_INCOME.style.backgroundColor = styles.getPropertyValue('--system-bg-btn-expense-income-default');
     BTN_INCOME.style.borderColor = styles.getPropertyValue('--system-border-btn-expense-income-default');
+});
+
+/**
+ * Lida com a entrada de texto no campo DESCRIÇÃO de preencher nova transição.
+ */
+INPUT_DESCRIPTION.addEventListener('input', (event) => {
+    let description = event.target.value;
+    const styles = getComputedStyle(BODY);
+
+    if(description !== ""){
+        INPUT_DESCRIPTION_VALIDATION.style.display = 'none';
+        INPUT_DESCRIPTION.style.borderColor = styles.getPropertyValue('--system-border-color-form');
+    }
+});
+
+/**
+ * Lida com a validação no campo DESCRIÇÃO de preencher nova transição.
+ * 
+ */
+INPUT_DESCRIPTION.addEventListener('blur', (event) => {
+    const description = event.target.value;
+    const styles = getComputedStyle(BODY);
+
+    if(description === ""){
+        INPUT_DESCRIPTION_VALIDATION.style.display = 'flex';
+        INPUT_DESCRIPTION.style.borderColor = styles.getPropertyValue('--system-validation-error-color');
+    }
+});
+
+/**
+ * Lida com a entrada de texto no campo VALOR de preencher nova transição.
+ */
+INPUT_AMOUNT.addEventListener('input', (event) => {
+    let amount = event.target.value;
+    const styles = getComputedStyle(BODY);
+
+    if(amount !== ""){
+        INPUT_AMOUNT_VALIDATION.style.display = 'none';
+        INPUT_AMOUNT.style.borderColor = styles.getPropertyValue('--system-border-color-form');
+    }
+});
+
+/**
+ * Lida com a validação no campo VALOR de preencher nova transição.
+ * 
+ */
+INPUT_AMOUNT.addEventListener('blur', (event) => {
+    const amount = event.target.value;
+    const styles = getComputedStyle(BODY);
+
+    if(amount === ""){
+        INPUT_AMOUNT_VALIDATION.style.display = 'flex';
+        INPUT_AMOUNT.style.borderColor = styles.getPropertyValue('--system-validation-error-color');
+    }
+});
+
+/**
+ * Lida com a entrada de texto no campo DATA de preencher nova transição.
+ */
+INPUT_DATE.addEventListener('input', (event) => {
+    let date = event.target.value;
+    const styles = getComputedStyle(BODY);
+
+    if(date !== ""){
+        INPUT_DATE_VALIDATION.style.display = 'none';
+        INPUT_DATE.style.borderColor = styles.getPropertyValue('--system-border-color-form');
+    }
+});
+
+/**
+ * Lida com a validação no campo DATA de preencher nova transição.
+ * 
+ */
+INPUT_DATE.addEventListener('blur', (event) => {
+    const date = event.target.value;
+    const styles = getComputedStyle(BODY);
+
+    if(date === ""){
+        INPUT_DATE_VALIDATION.style.display = 'flex';
+        INPUT_DATE.style.borderColor = styles.getPropertyValue('--system-validation-error-color');
+    }
 });
 
 /**

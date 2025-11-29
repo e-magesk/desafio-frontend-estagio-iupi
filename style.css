@@ -35,6 +35,8 @@
     --system-border-btn-expense-income-default: var(--system-border-color-form);
     --system-font-color-btn-expense-income-default: #78808c;
     --system-bg-btn-expense-income-default: var(--system-bg-form);
+    --system-validation-error-color: #ef4444;
+
 }
 
 [data-theme="dark"] {
@@ -66,6 +68,7 @@
     --system-border-btn-expense-income-default: var(--system-border-color-form);
     --system-font-color-btn-expense-income-default: #989fac;
     --system-bg-btn-expense-income-default: var(--system-bg-form);
+    --system-validation-error-color: #ef4444;
 }   
 
 body {
@@ -345,6 +348,7 @@ select {
     flex-direction: row;
     gap: 5px;
     margin-bottom: 10px;
+    align-items: start;
 
     input, button {
         width: 100%;
@@ -373,8 +377,24 @@ select {
 }
 
 .input-form {
+    width: 100%;
 
     p {
         margin: 10px 0 10px 0;
+
+        &.input-form-title {
+            color: var(--system-title-font-color);
+            font-weight: bold;
+        }
+
+        &.input-form-validation {
+            color: #ef4444;
+            display: none;
+            font-size: small;
+        }
+    }
+
+    input {
+        color: var(--system-text-font-color);
     }
 }
