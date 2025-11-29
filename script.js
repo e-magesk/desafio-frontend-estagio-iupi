@@ -14,6 +14,8 @@ const BODY = document.body;
 const IMG_THEME_SWITCHER = document.querySelector('.img-theme-switcher');
 const TABLE_TRANSACTIONS_BODY = document.getElementById('tbody-transactions');
 const BADGE_TOTAL = document.getElementById('badge-total');
+const INPUT_SEARCH = document.getElementById('input-search');
+const SELECT_FILTER = document.getElementById('select-filter');
 
 // ---
 // FUNÇÕES AUXILIARES 
@@ -25,7 +27,7 @@ const BADGE_TOTAL = document.getElementById('badge-total');
  * @returns {string} A data formatada.
  */
 function formatDate(dateString) { 
-    return new Date(dateString).toLocaleDateString('pt-BR');
+    return new Date(dateString).toLocaleDateString('pt-BR', { timeZone: 'UTC' });
 }
 
 /**
@@ -68,6 +70,34 @@ function getTranslatedType(type) {
     }
 }
 
+/**
+ * Compara dois objetos de transação com base no valor do campo "amount".
+ * @param {Object} a - O primeiro objeto de transação.
+ * @param {Object} b - O segundo objeto de transação.
+ * @returns {number} Um valor negativo, zero ou positivo, dependendo do resultado de a-b.
+ * A ordenção é crescente.
+ */
+function compareAmounts(a, b) {
+    return a.amount - b.amount;
+}
+
+/**
+ * Compara dois objetos de transação com base no valor do campo "date".
+ * @param {Object} a - O primeiro objeto de transação.
+ * @param {Object} b - O segundo objeto de transação.
+ * @returns {number} Um valor negativo, zero ou positivo, dependendo do resultado da comparação de datas.
+ * A ordenção é crescente.
+ */
+function compareDates(a, b) {
+    if (a.date < b.date) {
+    return -1;
+    }
+    if (a.date > b.date) {
+        return 1;
+    }
+    return 0;
+}
+
 // ---
 // MANIPULADORES DE EVENTOS
 // ---
@@ -91,9 +121,48 @@ BTN_THEME_SWITCHER.addEventListener('click', () => {
 });
 
 /**
+ * Lida com a entrada de texto no campo de busca.
+ * Filtra as transações com base na descrição digitada pelo usuário.
+ */
+INPUT_SEARCH.addEventListener('input', (event) => {
+    const searchTerm = event.target.value.toLowerCase();
+    
+    // Filtra as transações com base no termo de busca
+    const filteredTransactions = transactions.filter(transaction => 
+        transaction.description.toLowerCase().includes(searchTerm)
+    );
+
+    // Renderiza as transações filtradas
+    renderTransactions(filteredTransactions);
+});
+
+/**
+ * Lida com a mudança na seleção do filtro.
+ * Ordena as transações com base no critério selecionado (amount ou date).
+ */
+SELECT_FILTER.addEventListener('change', (event) => {
+    const filterValue = event.target.value;
+
+    let sortedTransactions = [...transactions];
+
+    if (filterValue === 'amount') {
+        sortedTransactions.sort(compareAmounts);
+    } else if (filterValue === 'date') {
+        sortedTransactions.sort(compareDates);
+    }
+
+    // Renderiza as transações ordenadas
+    renderTransactions(sortedTransactions);
+});
+
+/**
  * Função de inicialização da aplicação. A "main"
  */
 function init() {
+
+    // Ordena as transações por data ao iniciar
+    transactions.sort(compareDates);
+
     // Renderiza as transações iniciais obtidas através do mock
     renderTransactions(transactions);
 
@@ -111,8 +180,13 @@ function init() {
  */
  function renderTransactions(transactionsList) {
 
-    // Limpa o corpo da tabela antes de renderizar
-    TABLE_TRANSACTIONS_BODY.innerHTML = '';
+     // Limpa o corpo da tabela antes de renderizar
+     TABLE_TRANSACTIONS_BODY.innerHTML = '';
+
+    if (transactionsList.length === 0) {
+        renderNonTransactionFoundMessage();
+        return;
+    }
 
     // Itera sobre cada transação e cria uma linha na tabela
     transactionsList.forEach(transaction => {
@@ -154,6 +228,16 @@ function init() {
  */
 function renderBadgeTransactionTotal() {
     BADGE_TOTAL.textContent = transactions.length;
+}
+
+/**
+ * Renderiza a mensagem de "Nenhuma transação encontrada" na tabela.
+ * Será usada quando a função ""renderTransactions" for chamada com uma lista vazia.
+ */
+function renderNonTransactionFoundMessage() {
+    const message = document.createElement('tr');
+    message.innerHTML = '<td style="text-align: center;" colspan="4">Nenhuma transação encontrada.</td>';
+    TABLE_TRANSACTIONS_BODY.appendChild(message);
 }
 
 // Inicia a aplicação

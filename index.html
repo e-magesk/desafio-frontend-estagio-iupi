@@ -16,27 +16,45 @@
     <div class="main-content">
         <div class="card">
             <h3>Adicionar Renda / Despesa</h3>
-            <hr>
         </div>
-        <div class="card">
-            <h3>Lançamentos &nbsp;&nbsp; 
-                <span id="badge-total" class="badge badge-blue">
-                    <!-- O valor será preenchido pelo script.js -->
-                </span>
-            </h3>
-            <hr>
+        <div class="card transaction-table">
             <table>
                 <thead>
                     <tr>
-                        <th>Descrição</th>
-                        <th>Valor</th>
-                        <th>Data</th>
-                        <th>Tipo</th>
+                        <th class="th-search" colspan="2">
+                            <div class="input-icon">
+                                <img src="assets/icons/search.svg" alt="Buscar">
+                                <input type="search" placeholder="Buscar por descrição..." id="input-search">
+                            </div>
+                        </th>
+                        <th></th>
+                        <th class="th-filter">
+                            <div class="select-icon">
+                                <img src="assets/icons/sort.svg" alt="Buscar">
+                                <select id="select-filter">
+                                    <option selected value="date">Data</option>
+                                    <option value="amount">Valor</option>
+                                </select>
+                            </div>
+                        </th>
+                    </tr>
+                    <tr>
+                        <th class="th-field-name">Descrição</th>
+                        <th class="th-field-name">Valor</th>
+                        <th class="th-field-name">Data</th>
+                        <th class="th-field-name">Tipo</th>
                     </tr>
                 </thead>
                 <tbody id="tbody-transactions">
                     <!-- As transações serão inseridas aqui pela lógica presente no script.js -->
                 </tbody>
+                <tfoot>
+                    <tr>
+                        <td colspan="4">
+                            Total de Transações: &nbsp; <span id="badge-total" class="badge badge-blue"></span>
+                        </td>
+                    </tr>
+                </tfoot>
             </table>
         </div>
     </div>
