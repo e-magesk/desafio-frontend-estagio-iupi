@@ -19,6 +19,7 @@ const SELECT_FILTER = document.getElementById('select-filter');
 const WIDGET_TOTAL_AMOUNT = document.getElementById('widget-value-total-amount');
 const WIDGET_TOTAL_INCOME = document.getElementById('widget-value-total-income');
 const WIDGET_TOTAL_EXPENSE = document.getElementById('widget-value-total-expense');
+const BTN_DELETE_TRANSACTION = document.getElementById('btn-delete-transaction');
 
 // ---
 // FUNÇÕES AUXILIARES 
@@ -187,6 +188,20 @@ SELECT_FILTER.addEventListener('change', (event) => {
     renderTransactions(sortedTransactions);
 });
 
+TABLE_TRANSACTIONS_BODY.addEventListener('click', (event) => {
+    if (event.target.closest('#btn-delete-transaction')) {
+
+        const buttonDeleteClicked = event.target.closest('#btn-delete-transaction');
+        const transactionId = parseInt(buttonDeleteClicked.dataset.id);
+
+        // Remove a transação do estado global
+        transactions = transactions.filter(transaction => transaction.id !== transactionId);
+    
+        // Renderiza as transações novamente
+        renderTransactions(transactions);
+    }
+});
+
 /**
  * Função de inicialização da aplicação. A "main"
  */
@@ -242,11 +257,20 @@ function init() {
         typeCell.innerHTML = '';
         typeCell.appendChild(badgeSpan);
 
+        const buttonCell = document.createElement('td');
+        const button = document.createElement('button');
+        button.className = 'btn-icon';
+        button.innerHTML = '<img src="assets/icons/trash.svg" alt="Excluir">';
+        button.id = 'btn-delete-transaction';
+        button.dataset.id = transaction.id;
+        buttonCell.appendChild(button);
+        
         // Adiciona as células à linha
         row.appendChild(dateCell);
         row.appendChild(descriptionCell);
         row.appendChild(amountCell);
         row.appendChild(typeCell);
+        row.appendChild(buttonCell);
 
         // Adiciona a linha ao corpo da tabela
         TABLE_TRANSACTIONS_BODY.appendChild(row);

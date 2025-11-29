@@ -221,7 +221,7 @@ select {
 .select-icon {
     position: relative;
     display: flex;
-    align-items: center;;
+    align-items: center;
 
     img {
         height: 25px;
@@ -231,6 +231,7 @@ select {
     }
 
     select {
+        width: 100%;
         padding: 10px 10px 10px 40px;
         background-color: var(--system-bg-color-input-special);
         &:hover {
@@ -291,4 +292,20 @@ select {
     }
     border-left: 5px solid #3b82f6;
     margin-bottom: 0;
+}
+
+.btn-icon {
+
+    padding: 0;
+    border: none;
+    background-color: transparent;
+    &:hover {
+        cursor: pointer;
+    }
+    margin: 0;
+
+    img {
+        width: 24px;
+        height: 24px;
+    }
 }
