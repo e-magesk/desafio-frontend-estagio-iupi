@@ -16,6 +16,9 @@ const TABLE_TRANSACTIONS_BODY = document.getElementById('tbody-transactions');
 const BADGE_TOTAL = document.getElementById('badge-total');
 const INPUT_SEARCH = document.getElementById('input-search');
 const SELECT_FILTER = document.getElementById('select-filter');
+const WIDGET_TOTAL_AMOUNT = document.getElementById('widget-value-total-amount');
+const WIDGET_TOTAL_INCOME = document.getElementById('widget-value-total-income');
+const WIDGET_TOTAL_EXPENSE = document.getElementById('widget-value-total-expense');
 
 // ---
 // FUNÇÕES AUXILIARES 
@@ -96,6 +99,35 @@ function compareDates(a, b) {
         return 1;
     }
     return 0;
+}
+
+/** * Calcula o valor final das transações somando entradas e subtraindo saídas.
+ * @returns {number} O valor final das transações, considerando as entradas e saídas.
+ */ 
+function calculateFinalAmount(transactionsList) {
+    return transactionsList.reduce((total, transaction) => {
+        return transaction.type === 'income' 
+            ? total + transaction.amount 
+            : total - transaction.amount;
+    }, 0);
+}
+
+/** * Calcula o valor total das transações do tipo "income".
+ * @returns {number} O valor total das transações do tipo "income".
+ */
+function calculateTotalIncome(transactionsList) {
+    return transactionsList
+        .filter(transaction => transaction.type === 'income')
+        .reduce((total, transaction) => total + transaction.amount, 0);
+}
+
+/** * Calcula o valor total das transações do tipo "expense".
+ * @returns {number} O valor total das transações do tipo "expense".
+ */
+function calculateTotalExpense(transactionsList) {
+    return transactionsList
+        .filter(transaction => transaction.type === 'expense')
+        .reduce((total, transaction) => total + transaction.amount, 0);
 }
 
 // ---
@@ -220,6 +252,10 @@ function init() {
         TABLE_TRANSACTIONS_BODY.appendChild(row);
     });
 
+    // Atualiza os widgets de resumo após renderizar as transações
+    // Isso possibilita que os widgets reflitam apenas as transações atualmente exibidas
+    // na tabela, mesmo com um filtro de busca aplicado.
+    renderWidgets(transactionsList);
 }
 
 /**
@@ -238,6 +274,16 @@ function renderNonTransactionFoundMessage() {
     const message = document.createElement('tr');
     message.innerHTML = '<td style="text-align: center;" colspan="4">Nenhuma transação encontrada.</td>';
     TABLE_TRANSACTIONS_BODY.appendChild(message);
+}
+
+/**
+ * Renderiza os valores nos widgets de resumo, sendo eles: ENTRADAS, SAÍDAS e TOTAL.
+ * Essa função é chamada sempre que há uma atualização nas transações exibidas.
+ */
+function renderWidgets(transactionsList) {
+    WIDGET_TOTAL_AMOUNT.textContent = formatAmount(calculateFinalAmount(transactionsList));
+    WIDGET_TOTAL_INCOME.textContent = formatAmount(calculateTotalIncome(transactionsList));
+    WIDGET_TOTAL_EXPENSE.textContent = formatAmount(calculateTotalExpense(transactionsList));
 }
 
 // Inicia a aplicação
