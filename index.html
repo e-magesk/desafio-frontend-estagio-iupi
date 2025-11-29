@@ -15,12 +15,29 @@
     </header>
     <div class="main-content">
         <div class="card">
-            <h4>Adicionar Renda / Despesa</h4>
+            <h3>Adicionar Renda / Despesa</h3>
             <hr>
         </div>
         <div class="card">
-            <h4>Lançamentos</h4>
+            <h3>Lançamentos &nbsp;&nbsp; 
+                <span id="badge-total" class="badge badge-blue">
+                    <!-- O valor será preenchido pelo script.js -->
+                </span>
+            </h3>
             <hr>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Descrição</th>
+                        <th>Valor</th>
+                        <th>Data</th>
+                        <th>Tipo</th>
+                    </tr>
+                </thead>
+                <tbody id="tbody-transactions">
+                    <!-- As transações serão inseridas aqui pela lógica presente no script.js -->
+                </tbody>
+            </table>
         </div>
     </div>
     <script src="script.js" type="module"></script>

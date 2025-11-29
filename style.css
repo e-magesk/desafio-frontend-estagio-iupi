@@ -15,6 +15,16 @@
     --system-text-font-color: #6b7280;
     --system-border-color-form: #d1d5db;
     --system-bg-form: #ffffff;
+    --system-bg-thead-color: #f3f4f6;
+    --system-font-color-thead: #6b7280;
+    --system-font-color-td: #1f2937;
+    --system-font-color-badge-blue: #1e43c1;
+    --system-bg-color-badge-blue: #dbeafe;
+    --system-font-color-badge-green: #236a34;
+    --system-bg-color-badge-green: #dcfce7;
+    --system-font-color-badge-yellow: #a0580e;
+    --system-bg-color-badge-yellow: #fef9c3;
+
 }
 
 [data-theme="dark"] {
@@ -26,6 +36,15 @@
     --system-text-font-color: #6b7280;
     --system-border-color-form: #424c5a;
     --system-bg-form: #374151;
+    --system-bg-thead-color: #374151;
+    --system-font-color-thead: #dcdfe4;
+    --system-font-color-td: #6b7280;
+    --system-font-color-badge-blue: #9bdbfe;
+    --system-bg-color-badge-blue: #1e3a8a;
+    --system-font-color-badge-green: #bbf7c6;
+    --system-bg-color-badge-green: #14532d;
+    --system-font-color-badge-yellow: #d98d12;
+    --system-bg-color-badge-yellow: #713f12;
 }   
 
 body {
@@ -97,4 +116,50 @@ hr{
     background-color: var(--system-border-color-form);
     height: 0.5px;
     margin-bottom: 21.28px; /* A margem do h4 é exatamente 21.28px */
+}
+
+table {
+    border: 1px solid var(--system-border-color-form);
+    border-radius: 8px;
+    border-spacing: 0;
+}
+
+th {
+    background-color: var(--system-bg-thead-color);
+    padding: 15px 30px 15px 30px;
+    color: var(--system-font-color-thead);
+
+    &:first-child {
+        border-top-left-radius: 8px;
+    }
+
+    &:last-child {
+        border-top-right-radius: 8px;
+    }
+}
+
+td {
+    color: var(--system-font-color-td);
+    border-top: 1px solid var(--system-border-color-form);
+    padding: 10px 30px 10px 30px;
+}
+
+.badge {
+    padding: 5px;
+    border-radius: 12px;
+
+    &.badge-blue {
+        background-color: var(--system-bg-color-badge-blue);
+        color: var(--system-font-color-badge-blue);
+    }
+
+    &.badge-green {
+        background-color: var(--system-bg-color-badge-green);
+        color: var(--system-font-color-badge-green);
+    }
+
+    &.badge-yellow {
+        background-color: var(--system-bg-color-badge-yellow);
+        color: var(--system-font-color-badge-yellow);
+    }
 }
