@@ -398,3 +398,14 @@ select {
         color: var(--system-text-font-color);
     }
 }
+
+.btn-add-transaction {
+    margin-top: 10px;
+    background-color: var(--blue-btn-color);
+    border-color: transparent;
+    color: var(--blue-btn-font-color);
+    &:hover {
+        background-color: var(--blue-btn-hover-color);
+    }
+
+}

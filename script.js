@@ -313,7 +313,21 @@ INPUT_AMOUNT.addEventListener('input', (event) => {
     if(amount !== ""){
         INPUT_AMOUNT_VALIDATION.style.display = 'none';
         INPUT_AMOUNT.style.borderColor = styles.getPropertyValue('--system-border-color-form');
+        
+        // Aceita apenas números e uso de vírgula para separação da parte decimal
+        let value = amount.replace(/[^0-9,]/g, '');
+        INPUT_AMOUNT.value = value;
+
+        // Permite apenas duas casas decimais
+        if(value.includes(',')){
+            let decimal = value.split(',')[1]
+            if(decimal.length > 2){
+                decimal = decimal.slice(0, 2);
+                INPUT_AMOUNT.value = value.split(',')[0] + ',' + decimal;
+            }
+        }
     }
+        
 });
 
 /**
@@ -327,7 +341,27 @@ INPUT_AMOUNT.addEventListener('blur', (event) => {
     if(amount === ""){
         INPUT_AMOUNT_VALIDATION.style.display = 'flex';
         INPUT_AMOUNT.style.borderColor = styles.getPropertyValue('--system-validation-error-color');
+        INPUT_AMOUNT_VALIDATION.value = 'O preenchimento do campo é obrigatório!';
     }
+    else{
+        // Completa o número digitado para ser decimal e com exatamente duas casas decimais
+        if(!amount.includes(',')){
+            INPUT_AMOUNT.value = amount + ',00';
+        }
+        else{
+            if(amount.split(',')[1].length == 1){
+                INPUT_AMOUNT.value = amount + '0';
+            }
+        }
+
+        let value = parseFloat(amount.replace(',', '.'));
+        if(value === 0){
+            INPUT_AMOUNT_VALIDATION.innerText = 'O valor não pode ser 0,00!';
+            INPUT_AMOUNT_VALIDATION.style.display = 'flex';
+            INPUT_AMOUNT.style.borderColor = styles.getPropertyValue('--system-validation-error-color');
+        }
+    }
+    
 });
 
 /**
