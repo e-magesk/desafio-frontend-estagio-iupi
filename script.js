@@ -5,12 +5,20 @@ import { mockData } from './mock/transactions.js';
 // ---
 let transactions = [...mockData];
 let currentTheme = 'light';
+let nextId = -1; // Será inicializado posteriormente
+let newTransaction = {
+        id: "",
+        description: "",
+        amount: "",
+        date: "",
+        type: "income"
+    };
 
 // ---
 // SELETORES DO DOM (Constantes - Padrão UPPER_SNAKE_CASE)
 // ---
-const BTN_THEME_SWITCHER = document.getElementById('btn-theme-switcher');
 const BODY = document.body;
+const BTN_THEME_SWITCHER = document.getElementById('btn-theme-switcher');
 const IMG_THEME_SWITCHER = document.querySelector('.img-theme-switcher');
 const TABLE_TRANSACTIONS_BODY = document.getElementById('tbody-transactions');
 const BADGE_TOTAL = document.getElementById('badge-total');
@@ -19,7 +27,8 @@ const SELECT_FILTER = document.getElementById('select-filter');
 const WIDGET_TOTAL_AMOUNT = document.getElementById('widget-value-total-amount');
 const WIDGET_TOTAL_INCOME = document.getElementById('widget-value-total-income');
 const WIDGET_TOTAL_EXPENSE = document.getElementById('widget-value-total-expense');
-const BTN_DELETE_TRANSACTION = document.getElementById('btn-delete-transaction');
+const BTN_INCOME = document.getElementById('btn-income');
+const BTN_EXPENSE = document.getElementById('btn-expense');
 
 // ---
 // FUNÇÕES AUXILIARES 
@@ -131,6 +140,19 @@ function calculateTotalExpense(transactionsList) {
         .reduce((total, transaction) => total + transaction.amount, 0);
 }
 
+/**
+ * Calcula (apenas chamado na inicialização) qual é o próximo id a ser usado
+ * ao adicionar uma nova transação
+ */
+function findNextId() {
+    nextId = transactions.reduce((actual, transaction) => {
+        return transaction.id > actual
+            ? transaction.id + 1 
+            : actual;
+    }, -1);
+    newTransaction.id = nextId;
+}
+
 // ---
 // MANIPULADORES DE EVENTOS
 // ---
@@ -188,6 +210,13 @@ SELECT_FILTER.addEventListener('change', (event) => {
     renderTransactions(sortedTransactions);
 });
 
+/**
+ * Como o botão de deletar será criado apenas posteriormente, é preciso
+ * monitorar a tabela inteira para saber qual botão de deletar foi selecionado.
+ * 
+ * Após a identificação da linha refente ao botão, o item é permanentemente 
+ * removido da lista de transações
+ */
 TABLE_TRANSACTIONS_BODY.addEventListener('click', (event) => {
     if (event.target.closest('#btn-delete-transaction')) {
 
@@ -203,6 +232,44 @@ TABLE_TRANSACTIONS_BODY.addEventListener('click', (event) => {
 });
 
 /**
+ * Seleciona a opção de tipo de transação para "income"
+ */
+BTN_INCOME.addEventListener('click', (event) => {
+    newTransaction.type = 'income';
+
+    const styles = getComputedStyle(BODY);
+
+    // Muda as cores do botão INCOME para SELECIONADO
+    BTN_INCOME.style.color = styles.getPropertyValue('--system-font-color-btn-income-selected');
+    BTN_INCOME.style.backgroundColor = styles.getPropertyValue('--system-bg-btn-income-selected');
+    BTN_INCOME.style.borderColor = styles.getPropertyValue('--system-border-btn-income-selected');
+
+    // Muda as cores do botão EXPENSE para NÃO SELECIONADO
+    BTN_EXPENSE.style.color = styles.getPropertyValue('--system-font-color-btn-expense-income-default');
+    BTN_EXPENSE.style.backgroundColor = styles.getPropertyValue('--system-bg-btn-expense-income-default');
+    BTN_EXPENSE.style.borderColor = styles.getPropertyValue('--system-border-btn-expense-income-default');
+});
+
+/**
+ * Seleciona a opção de tipo de transação para "expense"
+ */
+BTN_EXPENSE.addEventListener('click', (event) => {
+    newTransaction.type = 'expense';
+
+    const styles = getComputedStyle(BODY);
+
+    // Muda as cores do botão INCOME para SELECIONADO
+    BTN_EXPENSE.style.color = styles.getPropertyValue('--system-font-color-btn-expense-selected');
+    BTN_EXPENSE.style.backgroundColor = styles.getPropertyValue('--system-bg-btn-expense-selected');
+    BTN_EXPENSE.style.borderColor = styles.getPropertyValue('--system-border-btn-expense-selected');
+
+    // Muda as cores do botão EXPENSE para NÃO SELECIONADO
+    BTN_INCOME.style.color = styles.getPropertyValue('--system-font-color-btn-expense-income-default');
+    BTN_INCOME.style.backgroundColor = styles.getPropertyValue('--system-bg-btn-expense-income-default');
+    BTN_INCOME.style.borderColor = styles.getPropertyValue('--system-border-btn-expense-income-default');
+});
+
+/**
  * Função de inicialização da aplicação. A "main"
  */
 function init() {
@@ -215,6 +282,9 @@ function init() {
 
     // Renderiza o total de transações no badge
     renderBadgeTransactionTotal();
+
+    // Encontra o próximo id para adicionar uma nova transação
+    findNextId();
 }
 
 // ---
