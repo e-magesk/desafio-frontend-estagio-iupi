@@ -19,32 +19,34 @@
                 <img src="assets/icons/plus.svg" alt="Adicionar Transação">
                 <h2>Nova Transação</h2>
             </div>
-            <div class="form-row">
-                <button id="btn-income" class="btn-income">Entrada</button>
-                <button id="btn-expense" class="btn-expense">Saída</button>
-            </div>
-            <div class="form-row">
-                <div class="input-form">
-                    <p class="input-form-title">Descrição</p>
-                    <input id="input-description" placeholder="Ex: Salário, Supermercado...">
-                    <p id="input-form-validation-description" class="input-form-validation">O preenchimento do campo é obrigatório!</p>
+            <form id="form-new-transaction">
+                <div class="form-row">
+                    <button type="button" id="btn-income" class="btn-income">Entrada</button>
+                    <button type="button" id="btn-expense" class="btn-expense">Saída</button>
                 </div>
-            </div>
-            <div class="form-row">
-                <div class="input-form">
-                    <p class="input-form-title">Valor (R$)</p>
-                    <input id="input-amount" placeholder="0,00" type="text">
-                    <p id="input-form-validation-amount" class="input-form-validation">O preenchimento do campo é obrigatório!</p>
+                <div class="form-row">
+                    <div class="input-form">
+                        <p class="input-form-title">Descrição</p>
+                        <input id="input-description" name="description" placeholder="Ex: Salário, Supermercado...">
+                        <p id="input-form-validation-description" class="input-form-validation">O preenchimento do campo é obrigatório!</p>
+                    </div>
                 </div>
-                <div class="input-form">
-                    <p class="input-form-title">Data</p>
-                    <input id="input-date" type="date">
-                    <p id="input-form-validation-date" class="input-form-validation">O preenchimento do campo é obrigatório!</p>
+                <div class="form-row">
+                    <div class="input-form">
+                        <p class="input-form-title">Valor (R$)</p>
+                        <input id="input-amount" placeholder="0,00" type="text" name="amount">
+                        <p id="input-form-validation-amount" class="input-form-validation">O preenchimento do campo é obrigatório!</p>
+                    </div>
+                    <div class="input-form">
+                        <p class="input-form-title">Data</p>
+                        <input id="input-date" type="date" name="date">
+                        <p id="input-form-validation-date" class="input-form-validation">O preenchimento do campo é obrigatório!</p>
+                    </div>
                 </div>
-            </div>
-            <div class="form-row">
-                <button id="btn-add-transaction" class="btn-add-transaction">Adicionar Transação</button>
-            </div>
+                <div class="form-row">
+                    <button type="button" id="btn-add-transaction" class="btn-add-transaction">Adicionar Transação</button>
+                </div>
+            </form>
         </div>
         <div class="div-vertical-orientation">
             <div class="div-horizontal-orientation">

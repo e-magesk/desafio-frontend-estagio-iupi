@@ -4,15 +4,15 @@ import { mockData } from './mock/transactions.js';
 // ESTADO GLOBAL
 // ---
 let transactions = [...mockData];
+let transactionsDisplayed = [...mockData]
 let currentTheme = 'light';
 let nextId = -1; // Será inicializado posteriormente
-let newTransaction = {
-        id: "",
-        description: "",
-        amount: "",
-        date: "",
-        type: "income"
-    };
+let typeNewTransaction = 'income'
+let fieldsValidation = {
+    'description' : false,
+    'amount' : false,
+    'date' : false
+}
 
 // ---
 // SELETORES DO DOM (Constantes - Padrão UPPER_SNAKE_CASE)
@@ -29,12 +29,14 @@ const WIDGET_TOTAL_INCOME = document.getElementById('widget-value-total-income')
 const WIDGET_TOTAL_EXPENSE = document.getElementById('widget-value-total-expense');
 const BTN_INCOME = document.getElementById('btn-income');
 const BTN_EXPENSE = document.getElementById('btn-expense');
+const BTN_ADD_TRANSACTION = document.getElementById('btn-add-transaction');
 const INPUT_DESCRIPTION = document.getElementById('input-description');
 const INPUT_AMOUNT = document.getElementById('input-amount');
 const INPUT_DATE = document.getElementById('input-date');
 const INPUT_DESCRIPTION_VALIDATION = document.getElementById('input-form-validation-description');
 const INPUT_AMOUNT_VALIDATION = document.getElementById('input-form-validation-amount');
 const INPUT_DATE_VALIDATION = document.getElementById('input-form-validation-date');
+const FORM_NEW_TRANSACTION = document.getElementById('form-new-transaction');
 
 
 // ---
@@ -152,12 +154,53 @@ function calculateTotalExpense(transactionsList) {
  * ao adicionar uma nova transação
  */
 function findNextId() {
-    nextId = transactions.reduce((actual, transaction) => {
-        return transaction.id > actual
-            ? transaction.id + 1 
-            : actual;
-    }, -1);
-    newTransaction.id = nextId;
+    nextId = transactions.length > 0 
+    ? Math.max(...transactions.map(t => t.id)) + 1 
+    : 1;
+}
+
+/**
+ * Reseta o formulário e o inicializa 
+ */
+function initForm(){
+
+    const styles = getComputedStyle(BODY);
+
+    // Reseta o form
+    FORM_NEW_TRANSACTION.reset();
+
+    // Reseta as mensagens de erro (caso existam)
+    INPUT_DESCRIPTION_VALIDATION.style.display = 'none';
+    INPUT_DESCRIPTION.style.borderColor = styles.getPropertyValue('--system-border-color-form');
+
+    INPUT_AMOUNT_VALIDATION.style.display = 'none';
+    INPUT_AMOUNT.style.borderColor = styles.getPropertyValue('--system-border-color-form');
+
+    INPUT_DATE_VALIDATION.style.display = 'none';
+    INPUT_DATE.style.borderColor = styles.getPropertyValue('--system-border-color-form');
+}
+
+/**
+ * Verifica se o form é válido. O formulário só é válido se todos os campos
+ * forem válidos
+ */
+function isValidForm(){
+    if(fieldsValidation.description === true && fieldsValidation.amount === true && fieldsValidation.date === true) return true;
+    return false;
+}
+
+/**
+ * Função para formatar o ojeto recebido com os dados da transação para o formato esperado
+ * de cada campo do objto.
+ */
+function formatObjectTransaction(transaction) {
+    return {
+        'id' : parseInt(transaction.id),
+        'description' : transaction.description.charAt(0).toUpperCase() + transaction.description.slice(1).toLowerCase(),
+        'amount' : parseFloat(transaction.amount.replace(',', '.')),
+        'type' : transaction.type,
+        'date': transaction.date
+    }
 }
 
 // ---
@@ -194,6 +237,9 @@ INPUT_SEARCH.addEventListener('input', (event) => {
         transaction.description.toLowerCase().includes(searchTerm)
     );
 
+    // Atualiza a lista de transações sendo exibidas
+    transactionsDisplayed = [...filteredTransactions]
+
     // Renderiza as transações filtradas
     renderTransactions(filteredTransactions);
 });
@@ -205,7 +251,7 @@ INPUT_SEARCH.addEventListener('input', (event) => {
 SELECT_FILTER.addEventListener('change', (event) => {
     const filterValue = event.target.value;
 
-    let sortedTransactions = [...transactions];
+    let sortedTransactions = [...transactionsDisplayed];
 
     if (filterValue === 'amount') {
         sortedTransactions.sort(compareAmounts);
@@ -242,7 +288,6 @@ TABLE_TRANSACTIONS_BODY.addEventListener('click', (event) => {
  * Seleciona a opção de tipo de transação para "income"
  */
 BTN_INCOME.addEventListener('click', (event) => {
-    newTransaction.type = 'income';
 
     const styles = getComputedStyle(BODY);
 
@@ -255,13 +300,14 @@ BTN_INCOME.addEventListener('click', (event) => {
     BTN_EXPENSE.style.color = styles.getPropertyValue('--system-font-color-btn-expense-income-default');
     BTN_EXPENSE.style.backgroundColor = styles.getPropertyValue('--system-bg-btn-expense-income-default');
     BTN_EXPENSE.style.borderColor = styles.getPropertyValue('--system-border-btn-expense-income-default');
+
+    typeNewTransaction = 'income';
 });
 
 /**
  * Seleciona a opção de tipo de transação para "expense"
  */
 BTN_EXPENSE.addEventListener('click', (event) => {
-    newTransaction.type = 'expense';
 
     const styles = getComputedStyle(BODY);
 
@@ -274,6 +320,8 @@ BTN_EXPENSE.addEventListener('click', (event) => {
     BTN_INCOME.style.color = styles.getPropertyValue('--system-font-color-btn-expense-income-default');
     BTN_INCOME.style.backgroundColor = styles.getPropertyValue('--system-bg-btn-expense-income-default');
     BTN_INCOME.style.borderColor = styles.getPropertyValue('--system-border-btn-expense-income-default');
+
+    typeNewTransaction = 'expense';
 });
 
 /**
@@ -286,6 +334,7 @@ INPUT_DESCRIPTION.addEventListener('input', (event) => {
     if(description !== ""){
         INPUT_DESCRIPTION_VALIDATION.style.display = 'none';
         INPUT_DESCRIPTION.style.borderColor = styles.getPropertyValue('--system-border-color-form');
+        fieldsValidation.description = true;
     }
 });
 
@@ -300,6 +349,7 @@ INPUT_DESCRIPTION.addEventListener('blur', (event) => {
     if(description === ""){
         INPUT_DESCRIPTION_VALIDATION.style.display = 'flex';
         INPUT_DESCRIPTION.style.borderColor = styles.getPropertyValue('--system-validation-error-color');
+        fieldsValidation.description = false;
     }
 });
 
@@ -310,14 +360,11 @@ INPUT_AMOUNT.addEventListener('input', (event) => {
     let amount = event.target.value;
     const styles = getComputedStyle(BODY);
 
-    if(amount !== ""){
-        INPUT_AMOUNT_VALIDATION.style.display = 'none';
-        INPUT_AMOUNT.style.borderColor = styles.getPropertyValue('--system-border-color-form');
-        
+    if(amount !== ""){     
         // Aceita apenas números e uso de vírgula para separação da parte decimal
         let value = amount.replace(/[^0-9,]/g, '');
         INPUT_AMOUNT.value = value;
-
+        
         // Permite apenas duas casas decimais
         if(value.includes(',')){
             let decimal = value.split(',')[1]
@@ -326,7 +373,15 @@ INPUT_AMOUNT.addEventListener('input', (event) => {
                 INPUT_AMOUNT.value = value.split(',')[0] + ',' + decimal;
             }
         }
+        
+        // Verifica se restou alguma coisa válida
+        if (INPUT_AMOUNT.value !== ''){
+            INPUT_AMOUNT_VALIDATION.style.display = 'none';
+            INPUT_AMOUNT.style.borderColor = styles.getPropertyValue('--system-border-color-form');
+            fieldsValidation.amount = true;
+        }
     }
+
         
 });
 
@@ -342,6 +397,7 @@ INPUT_AMOUNT.addEventListener('blur', (event) => {
         INPUT_AMOUNT_VALIDATION.style.display = 'flex';
         INPUT_AMOUNT.style.borderColor = styles.getPropertyValue('--system-validation-error-color');
         INPUT_AMOUNT_VALIDATION.value = 'O preenchimento do campo é obrigatório!';
+        fieldsValidation.amount = false;
     }
     else{
         // Completa o número digitado para ser decimal e com exatamente duas casas decimais
@@ -359,6 +415,7 @@ INPUT_AMOUNT.addEventListener('blur', (event) => {
             INPUT_AMOUNT_VALIDATION.innerText = 'O valor não pode ser 0,00!';
             INPUT_AMOUNT_VALIDATION.style.display = 'flex';
             INPUT_AMOUNT.style.borderColor = styles.getPropertyValue('--system-validation-error-color');
+            fieldsValidation.amount = false;
         }
     }
     
@@ -374,6 +431,7 @@ INPUT_DATE.addEventListener('input', (event) => {
     if(date !== ""){
         INPUT_DATE_VALIDATION.style.display = 'none';
         INPUT_DATE.style.borderColor = styles.getPropertyValue('--system-border-color-form');
+        fieldsValidation.date = true;
     }
 });
 
@@ -388,8 +446,46 @@ INPUT_DATE.addEventListener('blur', (event) => {
     if(date === ""){
         INPUT_DATE_VALIDATION.style.display = 'flex';
         INPUT_DATE.style.borderColor = styles.getPropertyValue('--system-validation-error-color');
+        fieldsValidation.date = false;
     }
 });
+
+/**
+ * Adiciona uma nova transação na lista de transações existentes a partir
+ * dos dados do formulário
+ */
+BTN_ADD_TRANSACTION.addEventListener('click', (event) => {
+
+    // Se não for válido as mensagens de alerta já estarão lá, é preciso apenas recusar 
+    // a solicitação de submit 
+    if(!isValidForm()) return;
+
+    const form = new FormData(FORM_NEW_TRANSACTION);
+
+    // Adiciona valores de fora do form que fazem parte da transação
+    form.append('id', nextId);
+    form.append('type', typeNewTransaction);
+    
+    // Pega o objeto Transaction do form
+    const newTransaction = formatObjectTransaction(Object.fromEntries(form));
+    
+    // Adiciona na lista de transações
+    transactions.push(newTransaction);
+    
+    // Reinicia o formulário
+    initForm();
+    
+    // Ordena as transações por data novamente e renderiza a página
+    transactions.sort(compareDates);
+    renderTransactions(transactions);
+    findNextId()
+    
+    // Reinicia os filtros e tabela
+    SELECT_FILTER.value = "date"
+    INPUT_SEARCH.value = ""
+    transactionsDisplayed = [...transactions]
+});
+
 
 /**
  * Função de inicialização da aplicação. A "main"
@@ -407,6 +503,9 @@ function init() {
 
     // Encontra o próximo id para adicionar uma nova transação
     findNextId();
+
+    // Inicializa o form
+    initForm();
 }
 
 // ---
