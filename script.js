@@ -104,6 +104,17 @@ function compareAmounts(a, b) {
 }
 
 /**
+ * Compara dois objetos de transação com base no valor do campo "amount".
+ * @param {Object} a - O primeiro objeto de transação.
+ * @param {Object} b - O segundo objeto de transação.
+ * @returns {number} Um valor negativo, zero ou positivo, dependendo do resultado de b-a.
+ * A ordenção é decrescente.
+ */
+function compareAmountsDesc(a, b) {
+    return b.amount - a.amount;
+}
+
+/**
  * Compara dois objetos de transação com base no valor do campo "date".
  * @param {Object} a - O primeiro objeto de transação.
  * @param {Object} b - O segundo objeto de transação.
@@ -120,7 +131,26 @@ function compareDates(a, b) {
     return 0;
 }
 
+/**
+ * Compara dois objetos de transação com base no valor do campo "date".
+ * @param {Object} a - O primeiro objeto de transação.
+ * @param {Object} b - O segundo objeto de transação.
+ * @returns {number} Um valor negativo, zero ou positivo, dependendo do resultado da comparação de datas.
+ * A ordenção é decrescente.
+ */
+function compareDatesDesc(a, b) {
+    if (b.date < a.date) {
+    return -1;
+    }
+    if (b.date > a.date) {
+        return 1;
+    }
+    return 0;
+}
+
 /** * Calcula o valor final das transações somando entradas e subtraindo saídas.
+ * @param {Array} transactionsList - lista das transações das quais se 
+ * calcular o total
  * @returns {number} O valor final das transações, considerando as entradas e saídas.
  */ 
 function calculateFinalAmount(transactionsList) {
@@ -132,6 +162,8 @@ function calculateFinalAmount(transactionsList) {
 }
 
 /** * Calcula o valor total das transações do tipo "income".
+ * @param {Array} transactionsList - lista das transações das quais se 
+ * calcular o total das entradas
  * @returns {number} O valor total das transações do tipo "income".
  */
 function calculateTotalIncome(transactionsList) {
@@ -141,6 +173,8 @@ function calculateTotalIncome(transactionsList) {
 }
 
 /** * Calcula o valor total das transações do tipo "expense".
+ * @param {Array} transactionsList - lista das transações das quais se 
+ * calcular o total dos gastos
  * @returns {number} O valor total das transações do tipo "expense".
  */
 function calculateTotalExpense(transactionsList) {
@@ -192,6 +226,7 @@ function isValidForm(){
 /**
  * Função para formatar o ojeto recebido com os dados da transação para o formato esperado
  * de cada campo do objto.
+ * @param {object} transaction - A transação a ser formatada.
  */
 function formatObjectTransaction(transaction) {
     return {
@@ -255,8 +290,12 @@ SELECT_FILTER.addEventListener('change', (event) => {
 
     if (filterValue === 'amount') {
         sortedTransactions.sort(compareAmounts);
+    } else if (filterValue === 'amount desc') {
+        sortedTransactions.sort(compareAmountsDesc);
     } else if (filterValue === 'date') {
         sortedTransactions.sort(compareDates);
+    } else if (filterValue === 'date desc') {
+        sortedTransactions.sort(compareDatesDesc);
     }
 
     // Renderiza as transações ordenadas
@@ -281,6 +320,11 @@ TABLE_TRANSACTIONS_BODY.addEventListener('click', (event) => {
     
         // Renderiza as transações novamente
         renderTransactions(transactions);
+
+        // Reinicia os filtros e tabela
+        SELECT_FILTER.value = "date"
+        INPUT_SEARCH.value = ""
+        transactionsDisplayed = [...transactions]
     }
 });
 
@@ -499,7 +543,7 @@ function init() {
     renderTransactions(transactions);
 
     // Renderiza o total de transações no badge
-    renderBadgeTransactionTotal();
+    renderBadgeTransactionTotal(transactions);
 
     // Encontra o próximo id para adicionar uma nova transação
     findNextId();
@@ -525,6 +569,7 @@ function renderTransactions(transactionsList) {
     // Isso possibilita que os widgets reflitam apenas as transações atualmente exibidas
     // na tabela, mesmo com um filtro de busca aplicado.
     renderWidgets(transactionsList);
+    renderBadgeTransactionTotal(transactionsList);
 
     if (transactionsList.length === 0) {
         renderNonTransactionFoundMessage();
@@ -578,7 +623,7 @@ function renderTransactions(transactionsList) {
  * Renderiza o total de transações no badge.
  * @param {number} total - O total de transações a ser exibido.
  */
-function renderBadgeTransactionTotal() {
+function renderBadgeTransactionTotal(transactions) {
     BADGE_TOTAL.textContent = transactions.length;
 }
 
@@ -595,6 +640,7 @@ function renderNonTransactionFoundMessage() {
 /**
  * Renderiza os valores nos widgets de resumo, sendo eles: ENTRADAS, SAÍDAS e TOTAL.
  * Essa função é chamada sempre que há uma atualização nas transações exibidas.
+ * @param {Array} transactionsList - Transações a serem consideradas para os cálculos
  */
 function renderWidgets(transactionsList) {
     WIDGET_TOTAL_AMOUNT.textContent = formatAmount(calculateFinalAmount(transactionsList));
