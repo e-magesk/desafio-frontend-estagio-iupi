@@ -423,6 +423,7 @@ select {
 
     input {
         color: var(--system-text-font-color);
+        background-color: var(--system-bg-form);
     }
 }
 

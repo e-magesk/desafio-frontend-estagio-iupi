@@ -239,6 +239,40 @@ function formatObjectTransaction(transaction) {
 }
 
 // ---
+// ARMAZENAMENTO
+// ---
+
+/**
+ * Verifica se há algum dado salvo no navegador sobre as transações ou o tema
+ * anteriormente escolhido pelo usuário. Se houver, carrega essas informações.
+ */
+function loadLocalStorage() {
+    
+    
+    if(localStorage.getItem('transactions')){
+        let data = JSON.parse(localStorage.getItem('transactions'));
+        
+        transactions = [...data];
+        transactionsDisplayed = [...data];
+    }
+
+    if(localStorage.getItem('theme')){
+        if(localStorage.getItem('theme') === 'dark'){
+            BTN_THEME_SWITCHER.click();
+        }
+    }
+}
+
+/**
+ * Atualiza o localStorage com as informações atuais sobre o tema e as transações
+ */
+function updateLocalStorage() {
+
+    localStorage.setItem('theme', currentTheme);
+    localStorage.setItem('transactions', JSON.stringify(transactions));
+}
+
+// ---
 // MANIPULADORES DE EVENTOS
 // ---
 
@@ -257,6 +291,9 @@ BTN_THEME_SWITCHER.addEventListener('click', () => {
     } else {
         IMG_THEME_SWITCHER.src = 'assets/icons/sun.svg';
     }
+
+    // Atualiza o localStorage sobre a mudança no tema
+    updateLocalStorage();
 
 });
 
@@ -325,6 +362,9 @@ TABLE_TRANSACTIONS_BODY.addEventListener('click', (event) => {
         SELECT_FILTER.value = "date"
         INPUT_SEARCH.value = ""
         transactionsDisplayed = [...transactions]
+
+        // Atualiza o localStorage sobre remoção de item
+        updateLocalStorage();
     }
 });
 
@@ -528,6 +568,9 @@ BTN_ADD_TRANSACTION.addEventListener('click', (event) => {
     SELECT_FILTER.value = "date"
     INPUT_SEARCH.value = ""
     transactionsDisplayed = [...transactions]
+
+    // Atualiza o localStorage sobre a adição na lista de transações
+    updateLocalStorage();
 });
 
 
@@ -535,6 +578,9 @@ BTN_ADD_TRANSACTION.addEventListener('click', (event) => {
  * Função de inicialização da aplicação. A "main"
  */
 function init() {
+
+    // Carrega as transações salvas no localStorage
+    loadLocalStorage();
 
     // Ordena as transações por data ao iniciar
     transactions.sort(compareDates);
