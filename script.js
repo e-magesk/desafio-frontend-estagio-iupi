@@ -13,6 +13,18 @@ let fieldsValidation = {
     'amount' : false,
     'date' : false
 }
+let filterValue = '';
+let searchTerm = '';
+
+let totalPages = 1;
+let currentPage = 1;
+
+let nextPageUrl = null;
+let previousPageUrl = null;
+
+
+// Infelizmente, uma pequena gambiarra
+let itensPerPage = -1;
 
 // ---
 // SELETORES DO DOM (Constantes - Padrão UPPER_SNAKE_CASE)
@@ -37,6 +49,9 @@ const INPUT_DESCRIPTION_VALIDATION = document.getElementById('input-form-validat
 const INPUT_AMOUNT_VALIDATION = document.getElementById('input-form-validation-amount');
 const INPUT_DATE_VALIDATION = document.getElementById('input-form-validation-date');
 const FORM_NEW_TRANSACTION = document.getElementById('form-new-transaction');
+const PAGINATION_PAGES = document.getElementById('pagination-pages');
+const BTN_PREVIOUS_PAGE = document.getElementById('btn-previous-page');
+const BTN_NEXT_PAGE = document.getElementById('btn-next-page');
 
 
 // ---
@@ -93,97 +108,6 @@ function getTranslatedType(type) {
 }
 
 /**
- * Compara dois objetos de transação com base no valor do campo "amount".
- * @param {Object} a - O primeiro objeto de transação.
- * @param {Object} b - O segundo objeto de transação.
- * @returns {number} Um valor negativo, zero ou positivo, dependendo do resultado de a-b.
- * A ordenção é crescente.
- */
-function compareAmounts(a, b) {
-    return a.amount - b.amount;
-}
-
-/**
- * Compara dois objetos de transação com base no valor do campo "amount".
- * @param {Object} a - O primeiro objeto de transação.
- * @param {Object} b - O segundo objeto de transação.
- * @returns {number} Um valor negativo, zero ou positivo, dependendo do resultado de b-a.
- * A ordenção é decrescente.
- */
-function compareAmountsDesc(a, b) {
-    return b.amount - a.amount;
-}
-
-/**
- * Compara dois objetos de transação com base no valor do campo "date".
- * @param {Object} a - O primeiro objeto de transação.
- * @param {Object} b - O segundo objeto de transação.
- * @returns {number} Um valor negativo, zero ou positivo, dependendo do resultado da comparação de datas.
- * A ordenção é crescente.
- */
-function compareDates(a, b) {
-    if (a.date < b.date) {
-    return -1;
-    }
-    if (a.date > b.date) {
-        return 1;
-    }
-    return 0;
-}
-
-/**
- * Compara dois objetos de transação com base no valor do campo "date".
- * @param {Object} a - O primeiro objeto de transação.
- * @param {Object} b - O segundo objeto de transação.
- * @returns {number} Um valor negativo, zero ou positivo, dependendo do resultado da comparação de datas.
- * A ordenção é decrescente.
- */
-function compareDatesDesc(a, b) {
-    if (b.date < a.date) {
-    return -1;
-    }
-    if (b.date > a.date) {
-        return 1;
-    }
-    return 0;
-}
-
-/** * Calcula o valor final das transações somando entradas e subtraindo saídas.
- * @param {Array} transactionsList - lista das transações das quais se 
- * calcular o total
- * @returns {number} O valor final das transações, considerando as entradas e saídas.
- */ 
-function calculateFinalAmount(transactionsList) {
-    return transactionsList.reduce((total, transaction) => {
-        return transaction.type === 'income' 
-            ? total + transaction.amount 
-            : total - transaction.amount;
-    }, 0);
-}
-
-/** * Calcula o valor total das transações do tipo "income".
- * @param {Array} transactionsList - lista das transações das quais se 
- * calcular o total das entradas
- * @returns {number} O valor total das transações do tipo "income".
- */
-function calculateTotalIncome(transactionsList) {
-    return transactionsList
-        .filter(transaction => transaction.type === 'income')
-        .reduce((total, transaction) => total + transaction.amount, 0);
-}
-
-/** * Calcula o valor total das transações do tipo "expense".
- * @param {Array} transactionsList - lista das transações das quais se 
- * calcular o total dos gastos
- * @returns {number} O valor total das transações do tipo "expense".
- */
-function calculateTotalExpense(transactionsList) {
-    return transactionsList
-        .filter(transaction => transaction.type === 'expense')
-        .reduce((total, transaction) => total + transaction.amount, 0);
-}
-
-/**
  * Reseta o formulário e o inicializa 
  */
 function initForm(){
@@ -228,6 +152,14 @@ function formatObjectTransaction(transaction) {
     }
 }
 
+function setupPagination(totalTransactions, transactionsPerPage) {
+
+    // Calcula o total de páginas com base no total de transações e o número de transações por página
+    totalPages = Math.ceil(totalTransactions / transactionsPerPage);
+
+    PAGINATION_PAGES.innerText = `Página ${currentPage} de ${totalPages}`;
+}
+
 // ---
 // ARMAZENAMENTO
 // ---
@@ -259,20 +191,47 @@ function updateLocalStorage() {
 // ---
 
 
-function loadDbTransactions() {
-    ApiService.get()
+function loadDbTransactions(descriptionFilter = '', orderBy = '-date') {
+    ApiService.get(descriptionFilter, orderBy)
         .then(data => {
             transactions = data.results.map(transaction => formatObjectTransaction(transaction));
             transactionsDisplayed = [...transactions];
 
-            // Ordena as transações por data ao iniciar
-            transactions.sort(compareDates);
+            if(itensPerPage === -1){
+                itensPerPage = data.results.length;
+            }
 
             // Renderiza as transações iniciais obtidas através do mock
-            renderTransactions(transactions);
+            renderTransactions(transactions, data.count);
 
-            // Renderiza o total de transações no badge
-            renderBadgeTransactionTotal(transactions);
+            // Atualiza a paginação
+            setupPagination(data.count, itensPerPage);
+
+            // Pega a próxima e a anterior URL para paginação
+            nextPageUrl = data.next;
+            previousPageUrl = data.previous;
+            currentPage = 1;
+        })
+        .catch(error => {
+            console.error('Erro ao carregar transações do banco:', error);
+        });
+}
+
+function loadSpecificGetDbTransactions(url) {
+    ApiService.specific_get(url)
+        .then(data => {
+            transactions = data.results.map(transaction => formatObjectTransaction(transaction));
+            transactionsDisplayed = [...transactions];
+            
+            // Renderiza as transações iniciais obtidas através do mock
+            renderTransactions(transactions, data.count);
+            
+            // Atualiza a paginação
+            setupPagination(data.count, itensPerPage);
+
+            // Pega a próxima e a anterior URL para paginação
+            nextPageUrl = data.next;
+            previousPageUrl = data.previous;
         })
         .catch(error => {
             console.error('Erro ao carregar transações do banco:', error);
@@ -285,9 +244,6 @@ function createDbTransaction(transaction) {
             // Reinicia o formulário
             initForm();
             
-            // Reinicia os filtros e tabela
-            SELECT_FILTER.value = "date"
-            INPUT_SEARCH.value = ""
             loadDbTransactions();
         })
         .catch(error => {
@@ -302,10 +258,6 @@ function deleteDbTransaction(id) {
 
             // Recarrega as transações do banco
             loadDbTransactions();
-
-            // Reinicia os filtros e tabela
-            SELECT_FILTER.value = "date"
-            INPUT_SEARCH.value = ""
         })
         .catch(error => {
             console.error('Erro ao deletar transação do banco:', error);
@@ -343,18 +295,10 @@ BTN_THEME_SWITCHER.addEventListener('click', () => {
  * Filtra as transações com base na descrição digitada pelo usuário.
  */
 INPUT_SEARCH.addEventListener('input', (event) => {
-    const searchTerm = event.target.value.toLowerCase();
-    
-    // Filtra as transações com base no termo de busca
-    const filteredTransactions = transactions.filter(transaction => 
-        transaction.description.toLowerCase().includes(searchTerm)
-    );
+    searchTerm = event.target.value.toLowerCase();
 
-    // Atualiza a lista de transações sendo exibidas
-    transactionsDisplayed = [...filteredTransactions]
-
-    // Renderiza as transações filtradas
-    renderTransactions(filteredTransactions);
+    // Carrega as transações solicitadas
+    loadDbTransactions(searchTerm, filterValue);
 });
 
 /**
@@ -362,22 +306,10 @@ INPUT_SEARCH.addEventListener('input', (event) => {
  * Ordena as transações com base no critério selecionado (amount ou date).
  */
 SELECT_FILTER.addEventListener('change', (event) => {
-    const filterValue = event.target.value;
+    filterValue = event.target.value;
 
-    let sortedTransactions = [...transactionsDisplayed];
-
-    if (filterValue === 'amount') {
-        sortedTransactions.sort(compareAmounts);
-    } else if (filterValue === 'amount desc') {
-        sortedTransactions.sort(compareAmountsDesc);
-    } else if (filterValue === 'date') {
-        sortedTransactions.sort(compareDates);
-    } else if (filterValue === 'date desc') {
-        sortedTransactions.sort(compareDatesDesc);
-    }
-
-    // Renderiza as transações ordenadas
-    renderTransactions(sortedTransactions);
+    // Carrega as transações solicitadas
+    loadDbTransactions(searchTerm, filterValue);
 });
 
 /**
@@ -587,6 +519,21 @@ BTN_ADD_TRANSACTION.addEventListener('click', (event) => {
 });
 
 
+BTN_PREVIOUS_PAGE.addEventListener('click', (event) => {
+    if(previousPageUrl){
+        loadSpecificGetDbTransactions(previousPageUrl);
+        currentPage--;
+    }
+});
+
+BTN_NEXT_PAGE.addEventListener('click', (event) => {
+    if(nextPageUrl){
+        loadSpecificGetDbTransactions(nextPageUrl);
+        currentPage++;
+    }
+});
+
+
 /**
  * Função de inicialização da aplicação. A "main"
  */
@@ -613,7 +560,7 @@ function init() {
  * Renderiza a lista de transações na tabela.
  * @param {Array} transactionsList - A lista de transações a ser renderizada na tabela de Lançamentos.
 */
-function renderTransactions(transactionsList) {
+function renderTransactions(transactionsList, totalTransactions) {
     
     // Limpa o corpo da tabela antes de renderizar
     TABLE_TRANSACTIONS_BODY.innerHTML = '';
@@ -621,8 +568,8 @@ function renderTransactions(transactionsList) {
     // Atualiza os widgets de resumo após renderizar as transações
     // Isso possibilita que os widgets reflitam apenas as transações atualmente exibidas
     // na tabela, mesmo com um filtro de busca aplicado.
-    renderWidgets(transactionsList);
-    renderBadgeTransactionTotal(transactionsList);
+    renderWidgets();
+    renderBadgeTransactionTotal(totalTransactions);
 
     if (transactionsList.length === 0) {
         renderNonTransactionFoundMessage();
@@ -674,10 +621,10 @@ function renderTransactions(transactionsList) {
 
 /**
  * Renderiza o total de transações no badge.
- * @param {number} total - O total de transações a ser exibido.
+ * @param {number} valueTotal - O total de transações a ser exibido.
  */
-function renderBadgeTransactionTotal(transactions) {
-    BADGE_TOTAL.textContent = transactions.length;
+function renderBadgeTransactionTotal(valueTotal) {
+    BADGE_TOTAL.textContent = valueTotal;
 }
 
 /**
@@ -695,10 +642,13 @@ function renderNonTransactionFoundMessage() {
  * Essa função é chamada sempre que há uma atualização nas transações exibidas.
  * @param {Array} transactionsList - Transações a serem consideradas para os cálculos
  */
-function renderWidgets(transactionsList) {
-    WIDGET_TOTAL_AMOUNT.textContent = formatAmount(calculateFinalAmount(transactionsList));
-    WIDGET_TOTAL_INCOME.textContent = formatAmount(calculateTotalIncome(transactionsList));
-    WIDGET_TOTAL_EXPENSE.textContent = formatAmount(calculateTotalExpense(transactionsList));
+function renderWidgets() {
+    ApiService.summary(searchTerm, filterValue)
+        .then(data => {
+            WIDGET_TOTAL_AMOUNT.textContent = formatAmount(data.net_balance);
+            WIDGET_TOTAL_INCOME.textContent = formatAmount(data.total_income);
+            WIDGET_TOTAL_EXPENSE.textContent = formatAmount(data.total_expense);
+        });
 }
 
 // Inicia a aplicação

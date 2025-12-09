@@ -1,5 +1,6 @@
 const TRANSACTIONS_URL = 'http://localhost:8000/transactions/';
 const LOGIN_URL = 'http://localhost:8000/login';
+const SUMMARY_URL = 'http://localhost:8000/summary';
 
 
 // Função Auxiliar para montar os cabeçalhos com o Token
@@ -35,8 +36,31 @@ export const ApiService = {
     },
 
     // GET
-    async get() {
-        const response = await fetch(`${TRANSACTIONS_URL}`, {
+    async get(descriptionFilter = '', orderBy = '-date') {
+        let url = `${TRANSACTIONS_URL}?`;
+        
+        if (descriptionFilter) {
+            url += `description=${encodeURIComponent(descriptionFilter)}&`;
+        }
+        if (orderBy) {
+            url += `order_by=${encodeURIComponent(orderBy)}&`;
+        }
+
+        const response = await fetch(`${url}`, {
+            method: 'GET',
+            headers: getHeaders() 
+        });
+        
+        if (response.status === 401) {
+            throw new Error('Sessão expirada');
+        }
+
+        return await response.json();
+    },
+    // GET
+    async specific_get(url) {
+
+        const response = await fetch(`${url}`, {
             method: 'GET',
             headers: getHeaders() 
         });
@@ -74,5 +98,28 @@ export const ApiService = {
         if (response.status === 401) {
             throw new Error('Sessão expirada');
         }
+    },
+
+    // SUMMARY
+    async summary(descriptionFilter = '', orderBy = '-date') {
+        let url = `${SUMMARY_URL}?`;
+        
+        if (descriptionFilter) {
+            url += `description=${encodeURIComponent(descriptionFilter)}&`;
+        }
+        if (orderBy) {
+            url += `order_by=${encodeURIComponent(orderBy)}&`;
+        }
+
+        const response = await fetch(`${url}`, {
+            method: 'GET',
+            headers: getHeaders() 
+        });
+        
+        if (response.status === 401) {
+            throw new Error('Sessão expirada');
+        }
+
+        return await response.json();
     }
 };

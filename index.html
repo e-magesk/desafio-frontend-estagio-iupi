@@ -84,9 +84,9 @@
                                 <div class="select-icon">
                                     <img src="assets/icons/sort.svg" alt="Buscar">
                                     <select id="select-filter">
-                                        <option value="date desc">Mais recentes</option>
-                                        <option selected value="date">Mais antigas</option>
-                                        <option value="amount desc">Maior valor</option>
+                                        <option selected value="-date">Mais recentes</option>
+                                        <option value="date">Mais antigas</option>
+                                        <option value="-amount">Maior valor</option>
                                         <option value="amount">Menor valor</option>
                                     </select>
                                 </div>
@@ -105,8 +105,15 @@
                     </tbody>
                     <tfoot>
                         <tr>
-                            <td colspan="5">
+                            <td colspan="3">
                                 Total de Transações: &nbsp; <span id="badge-total" class="badge badge-blue"></span>
+                            </td>
+                            <td colspan="2">
+                                <div class="pagination" id="pagination-controls">
+                                    <button class="btn-previous-page" id="btn-previous-page">&lt;</button>
+                                    <p class="pagination-pages" id="pagination-pages">Página 0 de 0</p>
+                                    <button class="btn-next-page" id="btn-next-page">&gt;</button>
+                                </div>
                             </td>
                         </tr>
                     </tfoot>

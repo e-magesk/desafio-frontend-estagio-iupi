@@ -200,7 +200,13 @@ tfoot td {
     color: var(--system-font-color-tfoot);
     font-weight: bold;
     background-color: var(--system-bg-thead-color);
+}
+
+tfoot td:first-child {
     border-bottom-left-radius: 8px;
+}
+
+tfoot td:last-child {
     border-bottom-right-radius: 8px;
 }
 
@@ -434,5 +440,25 @@ select {
     color: var(--blue-btn-font-color);
     &:hover {
         background-color: var(--blue-btn-hover-color);
+    }
+}
+
+.pagination {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    gap: 10px;
+}
+
+.btn-previous-page, .btn-next-page{
+    background-color: var(--system-bg-thead-color);
+    color: var(--system-font-color-tfoot);
+    font-size: large;
+    border: 1px solid var(--system-border-color-form);
+    border-radius: 4px;
+    width: 30px;
+    height: 30px;
+    &:hover{
+        cursor: pointer;
     }
 }
