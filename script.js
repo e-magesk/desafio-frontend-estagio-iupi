@@ -254,8 +254,6 @@ function createDbTransaction(transaction) {
 function deleteDbTransaction(id) {
     ApiService.delete(id)
         .then(() => {
-            console.log('Transação deletada com sucesso do banco:', id);
-
             // Recarrega as transações do banco
             loadDbTransactions();
         })
