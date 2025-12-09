@@ -1,4 +1,5 @@
 import { mockData } from './mock/transactions.js';
+import { ApiService } from './services/transaction.service.js';
 
 // ---
 // ESTADO GLOBAL
@@ -6,7 +7,6 @@ import { mockData } from './mock/transactions.js';
 let transactions = [...mockData];
 let transactionsDisplayed = [...mockData]
 let currentTheme = 'light';
-let nextId = -1; // Será inicializado posteriormente
 let typeNewTransaction = 'income'
 let fieldsValidation = {
     'description' : false,
@@ -184,16 +184,6 @@ function calculateTotalExpense(transactionsList) {
 }
 
 /**
- * Calcula (apenas chamado na inicialização) qual é o próximo id a ser usado
- * ao adicionar uma nova transação
- */
-function findNextId() {
-    nextId = transactions.length > 0 
-    ? Math.max(...transactions.map(t => t.id)) + 1 
-    : 1;
-}
-
-/**
  * Reseta o formulário e o inicializa 
  */
 function initForm(){
@@ -205,13 +195,13 @@ function initForm(){
 
     // Reseta as mensagens de erro (caso existam)
     INPUT_DESCRIPTION_VALIDATION.style.display = 'none';
-    INPUT_DESCRIPTION.style.borderColor = styles.getPropertyValue('--system-border-color-form');
+    INPUT_DESCRIPTION.style.borderColor = 'var(--system-border-color-form)';
 
     INPUT_AMOUNT_VALIDATION.style.display = 'none';
-    INPUT_AMOUNT.style.borderColor = styles.getPropertyValue('--system-border-color-form');
+    INPUT_AMOUNT.style.borderColor = 'var(--system-border-color-form)';
 
     INPUT_DATE_VALIDATION.style.display = 'none';
-    INPUT_DATE.style.borderColor = styles.getPropertyValue('--system-border-color-form');
+    INPUT_DATE.style.borderColor = 'var(--system-border-color-form)';
 }
 
 /**
@@ -245,17 +235,9 @@ function formatObjectTransaction(transaction) {
 /**
  * Verifica se há algum dado salvo no navegador sobre as transações ou o tema
  * anteriormente escolhido pelo usuário. Se houver, carrega essas informações.
- */
+*/
 function loadLocalStorage() {
     
-    
-    if(localStorage.getItem('transactions')){
-        let data = JSON.parse(localStorage.getItem('transactions'));
-        
-        transactions = [...data];
-        transactionsDisplayed = [...data];
-    }
-
     if(localStorage.getItem('theme')){
         if(localStorage.getItem('theme') === 'dark'){
             BTN_THEME_SWITCHER.click();
@@ -269,8 +251,67 @@ function loadLocalStorage() {
 function updateLocalStorage() {
 
     localStorage.setItem('theme', currentTheme);
-    localStorage.setItem('transactions', JSON.stringify(transactions));
 }
+
+
+// ---
+// BANCO DE DADOS
+// ---
+
+
+function loadDbTransactions() {
+    ApiService.get()
+        .then(data => {
+            transactions = data.results.map(transaction => formatObjectTransaction(transaction));
+            transactionsDisplayed = [...transactions];
+
+            // Ordena as transações por data ao iniciar
+            transactions.sort(compareDates);
+
+            // Renderiza as transações iniciais obtidas através do mock
+            renderTransactions(transactions);
+
+            // Renderiza o total de transações no badge
+            renderBadgeTransactionTotal(transactions);
+        })
+        .catch(error => {
+            console.error('Erro ao carregar transações do banco:', error);
+        });
+}
+
+function createDbTransaction(transaction) {
+    ApiService.post(transaction)
+        .then(data => {
+            // Reinicia o formulário
+            initForm();
+            
+            // Reinicia os filtros e tabela
+            SELECT_FILTER.value = "date"
+            INPUT_SEARCH.value = ""
+            loadDbTransactions();
+        })
+        .catch(error => {
+            console.error('Erro ao criar transação no banco:', error);
+        });
+}
+
+function deleteDbTransaction(id) {
+    ApiService.delete(id)
+        .then(() => {
+            console.log('Transação deletada com sucesso do banco:', id);
+
+            // Recarrega as transações do banco
+            loadDbTransactions();
+
+            // Reinicia os filtros e tabela
+            SELECT_FILTER.value = "date"
+            INPUT_SEARCH.value = ""
+        })
+        .catch(error => {
+            console.error('Erro ao deletar transação do banco:', error);
+        });
+}
+
 
 // ---
 // MANIPULADORES DE EVENTOS
@@ -352,19 +393,8 @@ TABLE_TRANSACTIONS_BODY.addEventListener('click', (event) => {
         const buttonDeleteClicked = event.target.closest('#btn-delete-transaction');
         const transactionId = parseInt(buttonDeleteClicked.dataset.id);
 
-        // Remove a transação do estado global
-        transactions = transactions.filter(transaction => transaction.id !== transactionId);
-    
-        // Renderiza as transações novamente
-        renderTransactions(transactions);
-
-        // Reinicia os filtros e tabela
-        SELECT_FILTER.value = "date"
-        INPUT_SEARCH.value = ""
-        transactionsDisplayed = [...transactions]
-
-        // Atualiza o localStorage sobre remoção de item
-        updateLocalStorage();
+        // Remove a transação do banco de dados
+        deleteDbTransaction(transactionId);
     }
 });
 
@@ -376,14 +406,14 @@ BTN_INCOME.addEventListener('click', (event) => {
     const styles = getComputedStyle(BODY);
 
     // Muda as cores do botão INCOME para SELECIONADO
-    BTN_INCOME.style.color = styles.getPropertyValue('--system-font-color-btn-income-selected');
-    BTN_INCOME.style.backgroundColor = styles.getPropertyValue('--system-bg-btn-income-selected');
-    BTN_INCOME.style.borderColor = styles.getPropertyValue('--system-border-btn-income-selected');
+    BTN_INCOME.style.color = 'var(--system-font-color-btn-income-selected)';
+    BTN_INCOME.style.backgroundColor = 'var(--system-bg-btn-income-selected)';
+    BTN_INCOME.style.borderColor = 'var(--system-border-btn-income-selected)';
 
     // Muda as cores do botão EXPENSE para NÃO SELECIONADO
-    BTN_EXPENSE.style.color = styles.getPropertyValue('--system-font-color-btn-expense-income-default');
-    BTN_EXPENSE.style.backgroundColor = styles.getPropertyValue('--system-bg-btn-expense-income-default');
-    BTN_EXPENSE.style.borderColor = styles.getPropertyValue('--system-border-btn-expense-income-default');
+    BTN_EXPENSE.style.color = 'var(--system-font-color-btn-expense-income-default)';
+    BTN_EXPENSE.style.backgroundColor = 'var(--system-bg-btn-expense-income-default)';
+    BTN_EXPENSE.style.borderColor = 'var(--system-border-btn-expense-income-default)';
 
     typeNewTransaction = 'income';
 });
@@ -396,14 +426,14 @@ BTN_EXPENSE.addEventListener('click', (event) => {
     const styles = getComputedStyle(BODY);
 
     // Muda as cores do botão INCOME para SELECIONADO
-    BTN_EXPENSE.style.color = styles.getPropertyValue('--system-font-color-btn-expense-selected');
-    BTN_EXPENSE.style.backgroundColor = styles.getPropertyValue('--system-bg-btn-expense-selected');
-    BTN_EXPENSE.style.borderColor = styles.getPropertyValue('--system-border-btn-expense-selected');
+    BTN_EXPENSE.style.color = 'var(--system-font-color-btn-expense-selected)';
+    BTN_EXPENSE.style.backgroundColor = 'var(--system-bg-btn-expense-selected)';
+    BTN_EXPENSE.style.borderColor = 'var(--system-border-btn-expense-selected)';
 
     // Muda as cores do botão EXPENSE para NÃO SELECIONADO
-    BTN_INCOME.style.color = styles.getPropertyValue('--system-font-color-btn-expense-income-default');
-    BTN_INCOME.style.backgroundColor = styles.getPropertyValue('--system-bg-btn-expense-income-default');
-    BTN_INCOME.style.borderColor = styles.getPropertyValue('--system-border-btn-expense-income-default');
+    BTN_INCOME.style.color = 'var(--system-font-color-btn-expense-income-default)';
+    BTN_INCOME.style.backgroundColor = 'var(--system-bg-btn-expense-income-default)';
+    BTN_INCOME.style.borderColor = 'var(--system-border-btn-expense-income-default)';
 
     typeNewTransaction = 'expense';
 });
@@ -417,7 +447,7 @@ INPUT_DESCRIPTION.addEventListener('input', (event) => {
 
     if(description !== ""){
         INPUT_DESCRIPTION_VALIDATION.style.display = 'none';
-        INPUT_DESCRIPTION.style.borderColor = styles.getPropertyValue('--system-border-color-form');
+        INPUT_DESCRIPTION.style.borderColor = 'var(--system-border-color-form)';
         fieldsValidation.description = true;
     }
 });
@@ -432,7 +462,7 @@ INPUT_DESCRIPTION.addEventListener('blur', (event) => {
 
     if(description === ""){
         INPUT_DESCRIPTION_VALIDATION.style.display = 'flex';
-        INPUT_DESCRIPTION.style.borderColor = styles.getPropertyValue('--system-validation-error-color');
+        INPUT_DESCRIPTION.style.borderColor = 'var(--system-validation-error-color)';
         fieldsValidation.description = false;
     }
 });
@@ -461,7 +491,7 @@ INPUT_AMOUNT.addEventListener('input', (event) => {
         // Verifica se restou alguma coisa válida
         if (INPUT_AMOUNT.value !== ''){
             INPUT_AMOUNT_VALIDATION.style.display = 'none';
-            INPUT_AMOUNT.style.borderColor = styles.getPropertyValue('--system-border-color-form');
+            INPUT_AMOUNT.style.borderColor = 'var(--system-border-color-form)';
             fieldsValidation.amount = true;
         }
     }
@@ -479,7 +509,7 @@ INPUT_AMOUNT.addEventListener('blur', (event) => {
 
     if(amount === ""){
         INPUT_AMOUNT_VALIDATION.style.display = 'flex';
-        INPUT_AMOUNT.style.borderColor = styles.getPropertyValue('--system-validation-error-color');
+        INPUT_AMOUNT.style.borderColor = 'var(--system-validation-error-color)';
         INPUT_AMOUNT_VALIDATION.value = 'O preenchimento do campo é obrigatório!';
         fieldsValidation.amount = false;
     }
@@ -498,7 +528,7 @@ INPUT_AMOUNT.addEventListener('blur', (event) => {
         if(value === 0){
             INPUT_AMOUNT_VALIDATION.innerText = 'O valor não pode ser 0,00!';
             INPUT_AMOUNT_VALIDATION.style.display = 'flex';
-            INPUT_AMOUNT.style.borderColor = styles.getPropertyValue('--system-validation-error-color');
+            INPUT_AMOUNT.style.borderColor = 'var(--system-validation-error-color)';
             fieldsValidation.amount = false;
         }
     }
@@ -514,7 +544,7 @@ INPUT_DATE.addEventListener('input', (event) => {
 
     if(date !== ""){
         INPUT_DATE_VALIDATION.style.display = 'none';
-        INPUT_DATE.style.borderColor = styles.getPropertyValue('--system-border-color-form');
+        INPUT_DATE.style.borderColor = 'var(--system-border-color-form)';
         fieldsValidation.date = true;
     }
 });
@@ -529,7 +559,7 @@ INPUT_DATE.addEventListener('blur', (event) => {
 
     if(date === ""){
         INPUT_DATE_VALIDATION.style.display = 'flex';
-        INPUT_DATE.style.borderColor = styles.getPropertyValue('--system-validation-error-color');
+        INPUT_DATE.style.borderColor = 'var(--system-validation-error-color)';
         fieldsValidation.date = false;
     }
 });
@@ -547,30 +577,13 @@ BTN_ADD_TRANSACTION.addEventListener('click', (event) => {
     const form = new FormData(FORM_NEW_TRANSACTION);
 
     // Adiciona valores de fora do form que fazem parte da transação
-    form.append('id', nextId);
     form.append('type', typeNewTransaction);
     
     // Pega o objeto Transaction do form
     const newTransaction = formatObjectTransaction(Object.fromEntries(form));
-    
-    // Adiciona na lista de transações
-    transactions.push(newTransaction);
-    
-    // Reinicia o formulário
-    initForm();
-    
-    // Ordena as transações por data novamente e renderiza a página
-    transactions.sort(compareDates);
-    renderTransactions(transactions);
-    findNextId()
-    
-    // Reinicia os filtros e tabela
-    SELECT_FILTER.value = "date"
-    INPUT_SEARCH.value = ""
-    transactionsDisplayed = [...transactions]
 
-    // Atualiza o localStorage sobre a adição na lista de transações
-    updateLocalStorage();
+    // Cria a transação no banco de dados
+    createDbTransaction(newTransaction);
 });
 
 
@@ -579,20 +592,14 @@ BTN_ADD_TRANSACTION.addEventListener('click', (event) => {
  */
 function init() {
 
-    // Carrega as transações salvas no localStorage
+    // Realiza o login do usuário para obter o token de autenticação
+    ApiService.login('eduarda', 'admin');
+
+    // Carrega as transações salvas no banco
+    loadDbTransactions();
+
+    // Carrega as preferências salvas no localStorage
     loadLocalStorage();
-
-    // Ordena as transações por data ao iniciar
-    transactions.sort(compareDates);
-
-    // Renderiza as transações iniciais obtidas através do mock
-    renderTransactions(transactions);
-
-    // Renderiza o total de transações no badge
-    renderBadgeTransactionTotal(transactions);
-
-    // Encontra o próximo id para adicionar uma nova transação
-    findNextId();
 
     // Inicializa o form
     initForm();
